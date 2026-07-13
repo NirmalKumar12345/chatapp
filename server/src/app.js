@@ -1,5 +1,9 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
+import authRoutes from './routes/authRoutes.js'
 
 const app  = express();
 app.use(cors({
@@ -8,12 +12,20 @@ app.use(cors({
 }));
 app.use(express.json());
 
+app.use(helmet());
+app.use(morgan('dev'));
+app.use(express.urlencoded({extended: true}));
+
+app.use(cookieParser());
+
 app.get('/api/health',(req,res)=>{
     res.status(200).json({status: "ok"});
 });
 
+app.use('/api/auth',authRoutes)
+
 app.use((err,req,res,next)=>{
-    console.error(error);
+    console.error(err);
     const status = err.status || 500;
     res.status(status).json({msg: err.message || "server error"})
 })
