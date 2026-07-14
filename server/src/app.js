@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-import authRoutes from './routes/authRoutes.js'
+import authRoutes from './routes/authRouter.js'
 
 const app  = express();
 app.use(cors({

@@ -3,11 +3,11 @@ import jws from 'jsonwebtoken';
 const generateToken =(userId)=>{
     return jws.sign(
         {
-            userId
+           userId
         },
-        process.env.JWT_SECRET,
+        process.env.JWT_ACCESS_SECRET,
         {
-            expiresIn: process.env.EXPIRATION_TIME
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRES
         }
     );
 };
