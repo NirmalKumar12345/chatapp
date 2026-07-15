@@ -122,6 +122,12 @@ export const login = async(req,res,next)=>{
   }
 }
 
+export const getProfile = async (req,res)=>{
+  res.status(200).json({
+    success: true,
+    user: req.user
+  })
+}
 export const logout = async (req, res, next) => {
   try {
     // 1. Read refresh token from cookie
