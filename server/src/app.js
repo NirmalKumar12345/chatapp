@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRouter.js'
+import userRoutes from './routes/userRouter.js'
 
 const app  = express();
 app.use(cors({
@@ -22,7 +23,8 @@ app.get('/api/health',(req,res)=>{
     res.status(200).json({status: "ok"});
 });
 
-app.use('/api/auth',authRoutes)
+app.use('/api/auth',authRoutes);
+app.use('/api/users',userRoutes);
 
 app.use((err,req,res,next)=>{
     console.error(err);
