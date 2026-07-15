@@ -27,8 +27,6 @@ export const register = async(req,res,next)=>{
       const hasedRefreshToken = await bcrypt.hash(refreshToken,10);
       newUser.refreshToken = hasedRefreshToken;
       await newUser.save();
-      newUser.password = undefined;
-      newUser.refreshToken = undefined;
       res.cookie("refreshToken",refreshToken,cookieOptions);
       return res.status(201).json({
         success: true,
@@ -82,6 +80,47 @@ export const refreshAccessToken = async(req,res,next)=>{
   }
 }
 
+export const login = async(req,res,next)=>{
+  try{
+   const {email,password}=req.body;
+   const exisitingUser = await User.findOne({email});
+   if(!exisitingUser){
+    return res.status(400).json({
+      success: false,
+      message: "Invalide email or password"
+    });
+   }
+   const passwordMatch = await bcrypt.compare(password,exisitingUser.password);
+    if(!passwordMatch){
+    return res.status(400).json({
+      success: false,
+      message: "Invalide email or password"
+    });
+   }
+   const accessToken = generateToken(exisitingUser._id);
+   const refreshToken = generateRefreshToken(exisitingUser._id);
+   const hashedRefreshToken = await bcrypt.hash(refreshToken,10);
+   exisitingUser.refreshToken = hashedRefreshToken;
+   await exisitingUser.save();
+   res.cookie("refreshToken",refreshToken,cookieOptions);
+   return res.status(200).json({
+    success: true,
+    message: "Login Successfully",
+    accessToken,
+    user: {
+        id: exisitingUser._id,
+        name: exisitingUser.name,
+        email: exisitingUser.email,
+        mobile: exisitingUser.mobile,
+    }
+   })
+  
+
+  }
+  catch(error){
+    next(error)
+  }
+}
 
 export const logout = async (req, res, next) => {
   try {
