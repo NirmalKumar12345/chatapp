@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRouter.js'
 import userRoutes from './routes/userRouter.js'
 import conversationRoutes from './routes/conversationRouter.js'
+import messageRoutes from './routes/message.router.js'
 
 const app  = express();
 app.use(cors({
@@ -27,6 +28,7 @@ app.get('/api/health',(req,res)=>{
 app.use('/api/auth',authRoutes);
 app.use('/api/users',userRoutes);
 app.use('/api/conversations',conversationRoutes);
+app.use('/api/messages',messageRoutes);
 
 app.use((err,req,res,next)=>{
     console.error(err);
