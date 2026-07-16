@@ -35,7 +35,7 @@ const userSchema = mongoose.Schema({
         type: Boolean,
         default: false
     },
-    lastseen:{
+    lastSeen:{
         type: Date,
         default: Date.now
     },
