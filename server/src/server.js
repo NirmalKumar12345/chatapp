@@ -2,22 +2,23 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import http from 'http';
 import {Server} from 'socket.io';
+import { socketHandler } from './socket/socket.js';
 import app from './app.js'
 
 
 dotenv.config();
 
-connectDB();
+await connectDB();
+export let io;
+
 const server = http.createServer(app);
-const io = new Server(server,{
+io = new Server(server,{
     cors: {
         origin: process.env.CLIENT_URL,
         credentials: true
     }
 })
-io.on('connection',(socket)=>{
-    console.log("User Connected");
-});
+socketHandler(io);
 const PORT = process.env.PORT || 8000;
 
 server.listen(PORT,()=>{
