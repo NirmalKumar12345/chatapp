@@ -83,35 +83,35 @@ export const refreshAccessToken = async(req,res,next)=>{
 export const login = async(req,res,next)=>{
   try{
    const {email,password}=req.body;
-   const exisitingUser = await User.findOne({email});
-   if(!exisitingUser){
+   const existingUser = await User.findOne({email});
+   if(!existingUser){
     return res.status(400).json({
       success: false,
-      message: "Invalide email or password"
+      message: "Invalid email or password"
     });
    }
-   const passwordMatch = await bcrypt.compare(password,exisitingUser.password);
+   const passwordMatch = await bcrypt.compare(password,existingUser.password);
     if(!passwordMatch){
     return res.status(400).json({
       success: false,
-      message: "Invalide email or password"
+      message: "Invalid email or password"
     });
    }
-   const accessToken = generateToken(exisitingUser._id);
-   const refreshToken = generateRefreshToken(exisitingUser._id);
+   const accessToken = generateToken(existingUser._id);
+   const refreshToken = generateRefreshToken(existingUser._id);
    const hashedRefreshToken = await bcrypt.hash(refreshToken,10);
-   exisitingUser.refreshToken = hashedRefreshToken;
-   await exisitingUser.save();
+   existingUser.refreshToken = hashedRefreshToken;
+   await existingUser.save();
    res.cookie("refreshToken",refreshToken,cookieOptions);
    return res.status(200).json({
     success: true,
     message: "Login Successfully",
     accessToken,
     user: {
-        id: exisitingUser._id,
-        name: exisitingUser.name,
-        email: exisitingUser.email,
-        mobile: exisitingUser.mobile,
+        _id: existingUser._id,
+        name: existingUser.name,
+        email: existingUser.email,
+        mobile: existingUser.mobile,
     }
    })
   
