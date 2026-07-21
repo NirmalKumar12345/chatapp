@@ -14,7 +14,7 @@ export let io;
 const server = http.createServer(app);
 io = new Server(server,{
     cors: {
-        origin: process.env.CLIENT_URL,
+        origin: process.env.CLIENT_URL || 'http://localhost:3000',
         credentials: true
     }
 })

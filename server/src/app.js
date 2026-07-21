@@ -9,8 +9,9 @@ import conversationRoutes from './routes/conversationRouter.js'
 import messageRoutes from './routes/message.router.js'
 
 const app  = express();
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 app.use(cors({
-    origin: process.env.CLIENT_URL,
+    origin: CLIENT_URL,
     credentials: true
 }));
 app.use(express.json());
