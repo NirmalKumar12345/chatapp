@@ -12,7 +12,7 @@ export interface RegisterPayload {
   mobile: string;
 }
 
-export interface LoginResponse {
+export interface Response {
   success: boolean;
   message: string;
   accessToken: string;

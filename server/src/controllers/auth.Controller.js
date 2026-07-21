@@ -33,7 +33,7 @@ export const register = async(req,res,next)=>{
         message: "User register successfully",
         accessToken,
         user: {
-        id: newUser._id,
+        _id: newUser._id,
         name: newUser.name,
         email: newUser.email,
         mobile: newUser.mobile,

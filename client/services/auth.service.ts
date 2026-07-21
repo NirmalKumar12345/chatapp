@@ -1,15 +1,15 @@
 import axiosInstance from "@/lib/axios";
-import { LoginPayload, LoginResponse, RegisterPayload } from "@/types/auth";
+import { LoginPayload, Response, RegisterPayload } from "@/types/auth";
 
 
-export const register = async (payload: RegisterPayload)=>{
-    const response = await axiosInstance.post("/auth/register", payload);
+export const register = async (data: RegisterPayload): Promise<Response> => {
+    const response = await axiosInstance.post("/auth/register", data);
     return response.data;
 }
 
 export const login = async (
   data: LoginPayload
-): Promise<LoginResponse> => {
+): Promise<Response> => {
   const response = await axiosInstance.post("/auth/login", data);
 
   return response.data;
