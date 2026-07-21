@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { login } from "@/src/services/auth.service";
-import { useAuthStore } from "@/src/store/authStore";
+import { login } from "@/services/auth.service";
+import { useAuthStore } from "@/store/authStore";
 
 
 export const useLogin = () => {

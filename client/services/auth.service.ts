@@ -1,5 +1,5 @@
-import axiosInstance from "@/src/lib/axios";
-import { LoginPayload, LoginResponse, RegisterPayload } from "@/src/types/auth";
+import axiosInstance from "@/lib/axios";
+import { LoginPayload, LoginResponse, RegisterPayload } from "@/types/auth";
 
 
 export const register = async (payload: RegisterPayload)=>{
