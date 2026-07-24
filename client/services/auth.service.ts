@@ -15,7 +15,7 @@ export const login = async (
   return response.data;
 };
 
-export const refreshToken = async()=>{
+export const refreshToken = async(): Promise<Response>=>{
     const response = await axiosInstance.get("/auth/refresh");
     return response.data;
 }

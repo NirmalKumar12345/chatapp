@@ -73,6 +73,12 @@ export const refreshAccessToken = async(req,res,next)=>{
     return res.status(200).json({
       success: true,
       accessToken,
+      user: {
+    _id: existingUser._id,
+    name: existingUser.name,
+    email: existingUser.email,
+    mobile: existingUser.mobile,
+  },
     });
   }
   catch(error){

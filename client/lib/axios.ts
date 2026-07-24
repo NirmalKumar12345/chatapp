@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/store/authStore";
 import axios from "axios";
 
 const axiosInstance = axios.create({
@@ -7,5 +8,14 @@ const axiosInstance = axios.create({
     "Content-Type": "application/json",
   },
 });
-
+axiosInstance.interceptors.request.use(
+  (config)=>{
+    const accessToken = useAuthStore.getState().accessToken;
+    if (accessToken){
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return config;
+  },
+  (error)=>Promise.reject(error)
+)
 export default axiosInstance;
