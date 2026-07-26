@@ -5,10 +5,15 @@ import { useAuthStore } from "@/store/authStore";
 import { refreshToken } from "@/services/auth.service";
 
 export const useAuth = () => {
-    const { accessToken, setUser, setAccessToken, setLoading } = useAuthStore();
+    const { accessToken, setUser, setAccessToken, setLoading, setHasCheckedAuth } = useAuthStore();
 
     useEffect(() => {
-        if (accessToken) return;
+        if (accessToken) {
+            setHasCheckedAuth(true);
+            setLoading(false);
+            return;
+        }
+
         const restoreSession = async () => {
             setLoading(true);
             try {
@@ -22,10 +27,11 @@ export const useAuth = () => {
                 }
             }
             finally {
+                setHasCheckedAuth(true);
                 setLoading(false);
             }
         };
 
         restoreSession();
-    }, [accessToken, setUser, setAccessToken, setLoading]);
+    }, [accessToken, setUser, setAccessToken, setLoading, setHasCheckedAuth]);
 };

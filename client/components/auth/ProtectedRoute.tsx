@@ -18,17 +18,18 @@ export default function ProtectedRoute({
     user,
     accessToken,
     isLoading,
+    hasCheckedAuth,
   } = useAuthStore();
 
   useEffect(() => {
-    if (isLoading) return;
+    if (!hasCheckedAuth || isLoading) return;
 
     if (!user || !accessToken) {
       router.replace("/login");
     }
-  }, [user, accessToken, isLoading, router]);
+  }, [user, accessToken, isLoading, hasCheckedAuth, router]);
 
-  if (isLoading) {
+  if (isLoading || !hasCheckedAuth) {
     return (
       <div className="flex h-screen items-center justify-center">
         Loading...

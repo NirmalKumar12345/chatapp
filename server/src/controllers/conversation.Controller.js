@@ -20,7 +20,7 @@ export const createConversation = async(req,res,next)=>{
       });
       return res.status(201).json({
         success: true,
-        conversation
+        conversations
       })
     }
     catch(error){
