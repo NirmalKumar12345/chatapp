@@ -1,6 +1,4 @@
-import ChatHeader from "./chatHeader";
-import MessageInput from "./messageInput";
-import MessageList from "./messageList";
+import ChatSection from "./chatSection";
 import Sidebar from "./sidebar";
 
 export default function ChatLayout() {
@@ -12,15 +10,9 @@ export default function ChatLayout() {
       </aside>
 
       {/* Chat Area */}
-      <main className="flex flex-1 flex-col">
-        <ChatHeader />
-
-        <div className="flex-1 overflow-y-auto">
-          <MessageList />
-        </div>
-
-        <MessageInput />
-      </main>
+      <div className="flex-1">
+        <ChatSection />
+      </div>
     </div>
   );
 }

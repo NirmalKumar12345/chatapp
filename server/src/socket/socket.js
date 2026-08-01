@@ -1,14 +1,15 @@
 
 const onlineUsers =new Map();
-export const getReceiverSockedId = (userId)=>{
+export const getReceiverSocketId = (userId)=>{
     return onlineUsers.get(userId);
 }
 export const socketHandler = (io)=>{
     io.on("connection",(socket)=>{
+      console.log("Socket Connected:",socket.id);  
      //user joins
      socket.on("addUser",(userId)=>{
        onlineUsers.set(userId,socket.id);
-       console.log("Online Users:",onlineUsers);
+       io.emit("onlineUsers",[...onlineUsers.keys()]);
      })
      // disconnect
      socket.on("disconnect",()=>{
@@ -18,6 +19,8 @@ export const socketHandler = (io)=>{
                 break;
             }
         }
+        io.emit("onlineUsers",[...onlineUsers.keys()]);
+        console.log("User Disconnected:",socket.id);
      });
     });
 }

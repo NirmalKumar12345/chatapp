@@ -14,6 +14,7 @@ export default function SearchBar() {
   const { data, isLoading } = useSearchUsers(debouncedSearch);
   const { mutate, isPending } = useCreateConversation();
   const handleCreateConversation = (receiverId: string)=>{
+    if (isPending) return;
     mutate(receiverId,{
         onSuccess: ()=>{
             setSearch("")
@@ -34,7 +35,7 @@ export default function SearchBar() {
           Searching...
         </p>
       )}
-
+      
       {debouncedSearch &&
         data?.users?.map((user) => (
           <div

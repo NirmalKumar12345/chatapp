@@ -7,10 +7,12 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   hasCheckedAuth: boolean;
+  onlineUsers: string[];
   setLoading: (loading: boolean)=> void;
   setUser: (user: User | null) => void;
   setAccessToken: (token: string | null) => void;
   setHasCheckedAuth: (checked: boolean) => void;
+  setOnlineUsers: (users: string[]) => void;
   logout: () => void;
 }
 
@@ -20,6 +22,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   isLoading: false,
   hasCheckedAuth: false,
+  onlineUsers: [],
+  setOnlineUsers: (users) =>
+    set({
+      onlineUsers: users,
+    }),
   setLoading: (loading) =>
     set({
       isLoading: loading,

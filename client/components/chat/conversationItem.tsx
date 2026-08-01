@@ -5,7 +5,7 @@ import { User } from "lucide-react";
 import { Conversation } from "@/types/conversation";
 import { useAuthStore } from "@/store/authStore";
 import { useChatStore } from "@/store/chatStore";
-import { Avatar, AvatarImage } from "../ui/avatar";
+import Image from "next/image";
 
 interface ConversationItemProps {
     conversation: Conversation;
@@ -15,11 +15,11 @@ export default function ConversationItem({
 }: ConversationItemProps) {
     const { selectedConversation, setSelectedConversation } = useChatStore();
     const isActive = selectedConversation?._id === conversation._id
-    const { user } = useAuthStore();
+    const { user, onlineUsers } = useAuthStore();
     const participant = conversation.participants.find(
         (p) => p._id !== user?._id
     );
-
+    const isOnline = participant ? onlineUsers.includes(participant._id) : false;
     return (
         <div
             onClick={() => setSelectedConversation(conversation)}
@@ -29,15 +29,22 @@ export default function ConversationItem({
                 }`}
         >
             {/* Avatar */}
-            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted">
-                {participant?.profilePic ? (
-                    <Avatar>
-                        <AvatarImage src={participant.profilePic} />
-                    </Avatar>
-                ) : (
-                    <User className="h-4 w-4 text-muted-foreground" />
-                )}
-                {participant?.isOnline && (
+            <div className="relative">
+                <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-muted">
+                    {participant?.profilePic ? (
+                        <Image
+                            src={participant.profilePic}
+                            alt={participant.name}
+                            width={48}
+                            height={48}
+                            className="h-full w-full object-cover"
+                        />
+                    ) : (
+                        <User className="h-6 w-6 text-muted-foreground" />
+                    )}
+                </div>
+
+                {isOnline && (
                     <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
                 )}
             </div>
