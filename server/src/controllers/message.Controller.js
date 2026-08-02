@@ -56,15 +56,22 @@ export const getMessages = async(req,res,next)=>{
             message: "Unauthorized to access this conversation"
         })
      }
-     const messages = await Message.find({conversation: req.params.conversationId}).populate('sender','name profilePic').sort({createdAt:1}).skip((page-1)*limit).limit(limit);
-     const totalMessages = await Message.countDocuments({conversation: req.params.conversationId});
+     const [messages,totalMessages]=await Promise.all([
+        Message.find({conversation:req.params.conversationId})
+        .populate("sender","name profilePic")
+        .sort({createdAt:-1})
+        .skip((page-1)*limit)
+        .limit(limit),
+        Message.countDocuments({conversation:req.params.conversationId})
+     ])
+      const orderedMessages = messages.reverse();
      return res.status(200).json({
         success: true,
         page,
         limit,
         totalMessages,
         totalPages: Math.ceil(totalMessages / limit),
-        messages
+        messages: orderedMessages
      })
 
     }catch(error){

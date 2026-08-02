@@ -57,7 +57,7 @@ export default function MessageInput() {
 
         <Button
           onClick={handleSend}
-          disabled={isPending}
+          disabled={!text.trim() || isPending}
         >
           <SendHorizontal className="h-4 w-4" />
         </Button>

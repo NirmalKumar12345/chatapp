@@ -1,7 +1,7 @@
 "use client";
 
 import { User } from "lucide-react";
-
+import { format, isToday, isYesterday } from "date-fns";
 import { Conversation } from "@/types/conversation";
 import { useAuthStore } from "@/store/authStore";
 import { useChatStore } from "@/store/chatStore";
@@ -13,6 +13,13 @@ interface ConversationItemProps {
 export default function ConversationItem({
     conversation,
 }: ConversationItemProps) {
+    const formattedTime = conversation.lastMessageAt
+        ? isToday(new Date(conversation.lastMessageAt))
+            ? format(new Date(conversation.lastMessageAt), "hh:mm a")
+            : isYesterday(new Date(conversation.lastMessageAt))
+                ? "Yesterday"
+                : format(new Date(conversation.lastMessageAt), "dd/MM/yy")
+        : "";
     const { selectedConversation, setSelectedConversation } = useChatStore();
     const isActive = selectedConversation?._id === conversation._id
     const { user, onlineUsers } = useAuthStore();
@@ -54,7 +61,7 @@ export default function ConversationItem({
                 <h3 className="truncate text-sm font-semibold">
                     {participant?.name}
                 </h3>
-
+                
                 <p className="truncate text-xs text-muted-foreground">
                     {conversation.lastMessage ?? "No messages yet"}
                 </p>
@@ -62,7 +69,7 @@ export default function ConversationItem({
 
             {/* Time */}
             <div className="text-xs text-muted-foreground">
-                {/* Later we'll format updatedAt */}
+                {formattedTime}
             </div>
         </div>
     );
