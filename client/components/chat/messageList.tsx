@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { useMessages } from "@/hooks/messages/useMessages";
 import { useChatStore } from "@/store/chatStore";
@@ -31,7 +31,6 @@ export default function MessageList() {
     topRef,
     bottomRef,
     scrollToBottom,
-    isNearBottom,
     saveScrollHeight,
   restoreScrollPosition,
   } = useAutoScroll(
@@ -48,10 +47,31 @@ export default function MessageList() {
         .flatMap((page) => page.messages) ?? []
     );
   }, [data]);
-
+ const hasScrolledInitially = useRef(false);
   /**
    * Infinite Scroll
    */
+
+useEffect(() => {
+  if (!selectedConversation) return;
+
+  if (isLoading) return;
+
+  if (!messages.length) return;
+
+  if (hasScrolledInitially.current) return;
+
+  requestAnimationFrame(() => {
+    scrollToBottom("auto");
+    hasScrolledInitially.current = true;
+  });
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [
+  selectedConversation?._id,
+  isLoading,
+  messages.length,
+  scrollToBottom,
+]);
   useEffect(() => {
     if (!topRef.current) return;
 
@@ -98,14 +118,10 @@ export default function MessageList() {
   /**
    * Scroll to bottom when conversation changes
    */
+  
   useEffect(() => {
-    if (!selectedConversation) return;
-
-    requestAnimationFrame(() => {
-      scrollToBottom("auto");
-    });
-  }, [selectedConversation,scrollToBottom]);
-
+  hasScrolledInitially.current = false;
+}, [selectedConversation?._id]);
   
   if (!selectedConversation) return null;
 
@@ -158,7 +174,6 @@ export default function MessageList() {
         show={showNewMessageIndicator}
         onClick={() => {
           scrollToBottom("smooth");
-
           setShowNewMessageIndicator(false);
         }}
       />

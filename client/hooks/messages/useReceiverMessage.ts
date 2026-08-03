@@ -8,7 +8,7 @@ import { useChatStore } from "@/store/chatStore";
 export const useReceiverMessage = () => {
   const queryClient = useQueryClient();
 
-  const { selectedConversation,triggerScrollToBottom,setShowNewMessageIndicator } = useChatStore();
+  const { selectedConversation,triggerScrollToBottom } = useChatStore();
 
   useEffect(() => {
     const handleNewMessage = (message: any) => {
@@ -20,7 +20,12 @@ export const useReceiverMessage = () => {
           if (!old) return old;
 
           const pages = [...old.pages];
-
+          const alreadyExists = pages[0].messages.some(
+            (m:any) => m._id === message._id
+          );
+         if(alreadyExists){
+          return old;
+         }
           pages[0] = {
             ...pages[0],
             messages: [...pages[0].messages, message],
@@ -47,5 +52,5 @@ export const useReceiverMessage = () => {
     return () => {
       socket.off("newMessage", handleNewMessage);
     };
-  }, [queryClient, selectedConversation, triggerScrollToBottom,setShowNewMessageIndicator]);
+  }, [queryClient, selectedConversation, triggerScrollToBottom ]);
 };
