@@ -11,6 +11,19 @@ export const socketHandler = (io)=>{
        onlineUsers.set(userId,socket.id);
        io.emit("onlineUsers",[...onlineUsers.keys()]);
      })
+     //Typing
+     socket.on("typing",({receiverId,conversationId})=>{
+      const receiverSocketId=getReceiverSocketId(receiverId);
+      if(receiverSocketId){
+        io.to(receiverSocketId).emit("typing",{conversationId});
+      }
+     })
+     socket.on("stopTyping",({receiverId,conversationId})=>{
+      const receiverSocketId=getReceiverSocketId(receiverId);
+      if(receiverSocketId){
+        io.to(receiverSocketId).emit("stopTyping",{conversationId});
+      }
+     })
      // disconnect
      socket.on("disconnect",()=>{
         for (const [userId,socketId] of onlineUsers.entries()){

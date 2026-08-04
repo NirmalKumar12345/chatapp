@@ -7,6 +7,7 @@ interface ChatStore {
   shouldScrollToBottom: boolean;
 
   showNewMessageIndicator: boolean;
+  isTyping: boolean;
 
   setSelectedConversation: (
     conversation: Conversation | null
@@ -19,6 +20,7 @@ interface ChatStore {
   setShowNewMessageIndicator: (
     value: boolean
   ) => void;
+  setIsTyping: (typing: boolean) => void;
 }
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -27,7 +29,11 @@ export const useChatStore = create<ChatStore>((set) => ({
   shouldScrollToBottom: false,
 
   showNewMessageIndicator: false,
-
+  isTyping: false,
+  setIsTyping: (typing) =>
+    set({
+      isTyping: typing,
+    }),
   setSelectedConversation: (conversation) =>
     set({
       selectedConversation: conversation,

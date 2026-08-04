@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SendHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -9,14 +9,24 @@ import { Input } from "@/components/ui/input";
 import { useChatStore } from "@/store/chatStore";
 import { useAuthStore } from "@/store/authStore";
 import { useSendMessage } from "@/hooks/messages/useSendMessage";
+import { socket } from "@/lib/socket";
 
 export default function MessageInput() {
   const [text, setText] = useState("");
-
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { selectedConversation } = useChatStore();
   const { user } = useAuthStore();
 
   const { mutate, isPending } = useSendMessage();
+  
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
+  
 
   if (!selectedConversation) return null;
 
@@ -24,6 +34,21 @@ export default function MessageInput() {
     (participant) => participant._id !== user?._id
   );
 
+  const handleTyping = (value: string) => {
+    setText(value);
+    if (!receiver) return;
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    if (!value.trim()) {
+      socket.emit("stopTyping", { receiverId: receiver._id,conversationId:selectedConversation._id });
+      return;
+    }
+    socket.emit("typing", { receiverId: receiver._id,conversationId:selectedConversation._id });
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("stopTyping", { receiverId: receiver._id,conversationId:selectedConversation._id });
+    }, 1000);
+  }
   const handleSend = () => {
     if (!text.trim() || !receiver) return;
 
@@ -36,6 +61,7 @@ export default function MessageInput() {
       {
         onSuccess: () => {
           setText("");
+          socket.emit("stopTyping", { receiverId: receiver._id,conversationId:selectedConversation._id });
         },
       }
     );
@@ -47,7 +73,7 @@ export default function MessageInput() {
         <Input
           placeholder="Type a message..."
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => handleTyping(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               handleSend();

@@ -7,7 +7,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useChatStore } from "@/store/chatStore";
 
 export default function ChatHeader() {
-  const { selectedConversation } = useChatStore();
+  const { selectedConversation,isTyping } = useChatStore();
   const { user, onlineUsers } = useAuthStore();
 
   if (!selectedConversation) return null;
@@ -47,8 +47,18 @@ export default function ChatHeader() {
             {participant.name}
           </h2>
 
-          <p className="text-sm text-muted-foreground">
-            {isOnline ? "Online" : "Offline"}
+          <p
+            className={`text-sm transition-colors ${
+              isTyping
+                ? "text-green-500"
+                : "text-muted-foreground"
+            }`}
+          >
+            {isTyping
+              ? "Typing..."
+              : isOnline
+              ? "Online"
+              : "Offline"}
           </p>
         </div>
       </div>
