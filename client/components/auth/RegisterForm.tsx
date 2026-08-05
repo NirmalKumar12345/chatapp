@@ -71,7 +71,20 @@ export default function RegisterForm() {
               </p>
             )}
           </div>
+          <div className="space-y-2">
+            <Label>Username</Label>
 
+            <Input
+              placeholder="Enter your username"
+              {...register("username")}
+            />
+
+            {errors.username && (
+              <p className="text-sm text-red-500">
+                {errors.username.message}
+              </p>
+            )}
+          </div>
           <div className="space-y-2">
             <Label>Email</Label>
 

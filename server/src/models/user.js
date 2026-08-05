@@ -21,8 +21,16 @@ const userSchema = mongoose.Schema({
     mobile:{
         type: String,
         required: true,
+        unique: true,
         trim: true
     },
+    username: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+},
     profilePic:{
         type: String,
         default: ""

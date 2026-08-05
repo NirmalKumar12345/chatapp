@@ -7,18 +7,36 @@ import User from '../models/user.js';
 
 export const register = async(req,res,next)=>{
     try{
-      const {name,email,password,mobile}= req.body;
-      const existingUser = await User.findOne({email});
-      if(existingUser){
-        return res.status(409).json({
-            success: false,
-            message: "Email already exits"
-        })
-      }
+      const {name,email,password,mobile,username}= req.body;
+      const existingUser = await User.findOne({ $or: [
+        { email },
+        { username },
+        {mobile}
+    ]});
+    if (existingUser?.mobile === mobile) {
+    return res.status(409).json({
+        success:false,
+        message:"Mobile number already exists"
+    });
+}
+      if (existingUser?.email === email) {
+    return res.status(409).json({
+        success:false,
+        message:"Email already exists"
+    });
+}
+
+if (existingUser?.username === username) {
+    return res.status(409).json({
+        success:false,
+        message:"Username already taken"
+    });
+}
       const hashpassword = await bcrypt.hash(password,10);
       const newUser = await User.create({
         name,
         email,
+        username,
         password: hashpassword,
         mobile
       });
@@ -36,6 +54,7 @@ export const register = async(req,res,next)=>{
         _id: newUser._id,
         name: newUser.name,
         email: newUser.email,
+        username: newUser.username,
         mobile: newUser.mobile,
       },
       });
@@ -77,6 +96,7 @@ export const refreshAccessToken = async(req,res,next)=>{
     _id: existingUser._id,
     name: existingUser.name,
     email: existingUser.email,
+    username: existingUser.username,
     mobile: existingUser.mobile,
   },
     });
@@ -117,6 +137,7 @@ export const login = async(req,res,next)=>{
         _id: existingUser._id,
         name: existingUser.name,
         email: existingUser.email,
+        username: existingUser.username,
         mobile: existingUser.mobile,
     }
    })

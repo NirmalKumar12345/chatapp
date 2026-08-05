@@ -11,3 +11,7 @@ export interface ConversationResponse {
   success: boolean;
   conversations: Conversation[];
 }
+export interface CreateConversationResponse {
+  success: boolean;
+  conversation: Conversation;
+}

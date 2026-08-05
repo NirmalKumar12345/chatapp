@@ -4,7 +4,7 @@ import { createConversation, getConversation } from '../controllers/conversation
 
 const router = express.Router();
 
-router.post('/',protect,createConversation);
-router.get('/',protect,getConversation);
+router.post('/createConversation',protect,createConversation);
+router.get('/getConversations',protect,getConversation);
 
 export default router;

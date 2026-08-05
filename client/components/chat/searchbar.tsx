@@ -46,7 +46,7 @@ export default function SearchBar() {
             <p className="font-medium">{user.name}</p>
 
             <p className="text-xs text-muted-foreground">
-              {user.email}
+              {user.username}
             </p>
           </div>
         ))}

@@ -13,17 +13,20 @@ export const getAllUsers = async (req,res,next)=>{
               },
             },
             {
-            email:{
+            username:{
                 $regex: req.query.search,
                 $options: "i"
-            } 
+            }
             }
         ]
     }: {}
-    const user = await User.find(keyword).find({_id:{$ne: loggedInUserId}}).select("-password -refreshToken")
+    const users = await User.find(keyword).find({_id:{$ne: loggedInUserId}}).sort({
+        username: 1,
+      })
+      .limit(20).select("-password -refreshToken")
     return res.status(200).json({
-        status: true,
-        user
+        success: true,
+        users
     })
 }
 catch(error){
