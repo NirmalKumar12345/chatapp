@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useDebounce } from "use-debounce";
 
 import { Input } from "@/components/ui/input";
-import { useSearchUsers } from "@/hooks/auth/useSearchUsers";
+import { useSearchUsers } from "@/hooks/users/useSearchUsers";
 import { useCreateConversation } from "@/hooks/conversations/useConversations";
+import { useDebounce } from "@/hooks/common/useDebounce";
+import SearchUserSkeleton from "./searchUserSkeleton";
 
 export default function SearchBar() {
   const [search, setSearch] = useState("");
-
-  const [debouncedSearch] = useDebounce(search, 300);
+  const debouncedSearch = useDebounce(search);
   const { data, isLoading } = useSearchUsers(debouncedSearch);
   const { mutate, isPending } = useCreateConversation();
   const handleCreateConversation = (receiverId: string)=>{
@@ -30,10 +30,8 @@ export default function SearchBar() {
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      {isLoading && (
-        <p className="text-sm text-muted-foreground">
-          Searching...
-        </p>
+      {isLoading && debouncedSearch && (
+        <SearchUserSkeleton />
       )}
       
       {debouncedSearch &&

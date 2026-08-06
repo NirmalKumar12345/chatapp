@@ -8,7 +8,6 @@ export const useSocket =()=>{
      if (!user?._id) return;
      socket.connect();
      const onConnect =()=>{
-     console.log("Socket Connected:",socket.id);   
      socket.emit("addUser",user._id);
      };
      const handleOnlineUsers=(users: string[])=>{
