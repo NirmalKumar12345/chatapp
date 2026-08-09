@@ -78,3 +78,39 @@ export const getMessages = async(req,res,next)=>{
         next(error)
     }
 }
+
+export const markMessagesAsRead = async(req,res,next)=>{
+    try{
+    const { conversationId } = req.params;
+    const userId = req.user._id;
+    const conversation = await Conversation.findById(conversationId);
+    if(!conversation){
+        return res.status(404).json({status: false,
+            message: "Conversation not found"
+        })
+    };
+    const isParticipants = conversation.participants.some((participant)=>participant.toString()===userId.toString());
+    if(!isParticipants){
+        return res.status(403).json({
+            status: false,
+            message: "Unauthorized to access this conversations"
+        })
+    }
+    const result = await Message.updateMany({
+        conversation: conversationId,
+        receiver: userId,
+        read: false
+    },{
+        $set:{
+            read: true
+        },
+    }
+);
+ return res.status(200).json({
+    success: true,
+    modifiedCount: result.modifiedCount
+ });
+    }catch(error){
+        next(error)
+    }
+}
