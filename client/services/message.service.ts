@@ -10,3 +10,13 @@ export const sendMessage = async(payload: SendMessagePayload)=>{
     const response = await axiosInstance.post("/messages",payload);
     return response.data
 }
+
+export const markMessagesAsRead = async (
+  conversationId: string
+) => {
+  const response = await axiosInstance.patch(
+    `/messages/${conversationId}/read`
+  );
+
+  return response.data;
+};

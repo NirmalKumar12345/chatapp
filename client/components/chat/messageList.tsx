@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-
+import { useMarkMessageAsRead } from "@/hooks/messages/useMarkMessageAsRead";
 import { useMessages } from "@/hooks/messages/useMessages";
 import { useChatStore } from "@/store/chatStore";
-
 import MessageBubble from "./messageBubble";
 import { useAutoScroll } from "@/hooks/messages/useAutoScroll";
 import NewMessageIndicator from "./newMessageIndicator";
@@ -17,7 +16,9 @@ export default function MessageList() {
     showNewMessageIndicator,
     setShowNewMessageIndicator,
   } = useChatStore();
-
+  const {
+  mutate: markMessagesAsRead,
+} = useMarkMessageAsRead();
   const {
     data,
     isLoading,
@@ -37,7 +38,25 @@ export default function MessageList() {
     shouldScrollToBottom,
     resetScrollToBottom
   );
+const previousConversationIdRef = useRef<string | null>(null);
+useEffect(() => {
+  const conversationId = selectedConversation?._id;
 
+  if (!conversationId) return;
+
+  if (
+    previousConversationIdRef.current === conversationId
+  ) {
+    return;
+  }
+
+  previousConversationIdRef.current = conversationId;
+
+  markMessagesAsRead(conversationId);
+}, [
+  selectedConversation?._id,
+  markMessagesAsRead,
+]);
   // Merge all pages
   const messages = useMemo(() => {
     return (

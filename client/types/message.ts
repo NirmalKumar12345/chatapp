@@ -7,6 +7,7 @@ export interface Message {
   receiver: string;
   text: string;
   read: boolean;
+  delivered: boolean;
   createdAt: string;
   updatedAt: string;
 }

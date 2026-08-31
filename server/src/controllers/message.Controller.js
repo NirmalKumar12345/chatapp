@@ -24,9 +24,34 @@ export const sendMessage = async (req,res,next)=>{
     conversation.lastMessageAt = new Date();
     await conversation.save();
     await message.populate("sender", "name profilePic");
-    const receiverSocketId = getReceiverSocketId(receiverId);
+    const receiverSocketId = getReceiverSocketId(receiverId.toString());
     if(receiverSocketId){
-        io.to(receiverSocketId).emit("newMessage",message);
+        io.to(receiverSocketId).emit("newMessage",message,async()=>{
+            try {
+              const updateMessage = await Message.findByIdAndUpdate(
+                message._id,
+                {
+                    delivered: true
+                },
+                {
+                    new: true
+                }
+              );
+                            if (!updateMessage) return;
+                            const senderSocketId = getReceiverSocketId(
+                                senderId.toString()
+                            );
+                            if (senderSocketId) {
+                                io.to(senderSocketId).emit("messageDelivered", {
+                                    messageId: message._id.toString(),
+                                    conversationId: conversationId.toString(),
+                                });
+                            }
+            }
+           catch(error){
+            console.error("Delivery acknowledgement error:",error);
+           }
+        });
     }
     return res.status(201).json({
         success: true,
@@ -106,6 +131,24 @@ export const markMessagesAsRead = async(req,res,next)=>{
         },
     }
 );
+if(result.modifiedCount===0){
+        return res.status(200).json({
+            success: true,
+            modifiedCount: 0
+        })
+    }
+    const otherParticipants = conversation.participants.find((participant)=>participant.toString()!==userId.toString())
+    if(otherParticipants){
+        const receiverSocketId=getReceiverSocketId(
+            otherParticipants.toString()
+        );
+        if(receiverSocketId){
+            io.to(receiverSocketId).emit('messagesRead',{
+                conversationId,
+                receiverId: userId.toString()
+            })
+        }
+    }
  return res.status(200).json({
     success: true,
     modifiedCount: result.modifiedCount

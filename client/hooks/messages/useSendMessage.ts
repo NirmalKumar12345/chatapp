@@ -13,12 +13,16 @@ export const useSendMessage = ()=>{
             const newMessage = data.message;
             queryClient.setQueryData(
                 ["messages",newMessage.conversation],
-                (oldData: {
+                (oldData: | {
                     pages: MessagesResponse[];
                     pageParams: number[];
                 } | undefined)=>{
                     if(!oldData) return oldData;
                     const pages =[...oldData.pages];
+                    const messageExits = pages.some((page)=>page.messages.some((message)=>message._id===newMessage._id))
+                    if(messageExits){
+                        return oldData;
+                    }
                     pages[0]={
                         ...pages[0],
                         messages:[...pages[0].messages,newMessage],
