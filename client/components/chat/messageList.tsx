@@ -59,11 +59,19 @@ useEffect(() => {
 ]);
   // Merge all pages
   const messages = useMemo(() => {
+    const seen = new Set<string>();
+
     return (
       data?.pages
         .slice()
         .reverse()
-        .flatMap((page) => page.messages) ?? []
+        .flatMap((page) => page.messages)
+        .filter((message) => {
+          if (!message?._id) return false;
+          if (seen.has(message._id)) return false;
+          seen.add(message._id);
+          return true;
+        }) ?? []
     );
   }, [data]);
  const hasScrolledInitially = useRef(false);
@@ -183,7 +191,7 @@ useEffect(() => {
 
       {messages.map((message) => (
         <MessageBubble
-          key={message._id}
+          key={message?._id}
           message={message}
         />
       ))}
