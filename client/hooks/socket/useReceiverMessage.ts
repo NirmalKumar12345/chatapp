@@ -15,37 +15,33 @@ export const useReceiverMessage = () => {
 
   useEffect(() => {
     const handleNewMessage = (message: any, acknowledge: () => void) => {
-      if (message.conversation !== selectedConversation?._id) return;
-
-      queryClient.setQueryData(
-        ["messages", selectedConversation?._id],
-        (old: any) => {
-          if (!old) return old;
-
-          const pages = [...old.pages];
-          const messageExists = pages.some((page: any) =>
-            page.messages.some((existingMessage: any) => existingMessage._id === message._id)
-          );
-          if (messageExists) {
-            return old;
-          }
-          pages[0] = {
-            ...pages[0],
-            messages: [...pages[0].messages, message],
-          };
-
-          return {
-            ...old,
-            pages,
-          };
-        }
-      );
-
       const senderId = message.sender?._id?.toString?.() ?? message.sender?._id;
       const currentUserId = user?._id?.toString?.() ?? user?._id;
 
-      if (senderId && currentUserId && senderId !== currentUserId) {
-        markMessagesAsRead(message.conversation);
+      if (message.conversation === selectedConversation?._id) {
+        queryClient.setQueryData(
+          ["messages", selectedConversation?._id],
+          (old: any) => {
+            if (!old) return old;
+
+            const pages = old.pages.map((page: any) => ({
+              ...page,
+              messages: page.messages.filter((existingMessage: any) => existingMessage._id !== message._id),
+            }));
+
+            const firstPage = pages[0] ?? { messages: [] };
+            firstPage.messages = [...firstPage.messages, message];
+
+            return {
+              ...old,
+              pages,
+            };
+          }
+        );
+
+        if (senderId && currentUserId && senderId !== currentUserId) {
+          markMessagesAsRead(message.conversation);
+        }
       }
 
       acknowledge();
@@ -85,6 +81,9 @@ export const useReceiverMessage = () => {
       });
     };
     const handleMessagesRead = ({ conversationId, receiverId }: { conversationId: string; receiverId: string }) => {
+      const currentUserId = user?._id?.toString?.() ?? user?._id;
+      const targetReceiverId = receiverId?.toString?.() ?? receiverId;
+
       queryClient.setQueryData(["messages", conversationId], (old: any) => {
         if (!old) return old;
 
@@ -94,9 +93,13 @@ export const useReceiverMessage = () => {
             ...page,
             messages: page.messages.map((message: any) => {
               const senderId = message.sender?._id?.toString?.() ?? message.sender?._id;
-              const currentUserId = user?._id?.toString?.() ?? user?._id;
+              const messageReceiverId = message.receiver?.toString?.() ?? message.receiver;
 
-              if (message.conversation === conversationId && senderId === currentUserId) {
+              if (
+                message.conversation === conversationId &&
+                senderId === currentUserId &&
+                messageReceiverId === targetReceiverId
+              ) {
                 return {
                   ...message,
                   delivered: true,
