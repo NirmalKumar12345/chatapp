@@ -7,6 +7,8 @@ import { useChatStore } from "@/store/chatStore";
 import MessageBubble from "./messageBubble";
 import { useAutoScroll } from "@/hooks/messages/useAutoScroll";
 import NewMessageIndicator from "./newMessageIndicator";
+import { format, isToday, isYesterday } from "date-fns";
+import DateSeparator from "./dateSeparator";
 
 export default function MessageList() {
   const {
@@ -17,8 +19,8 @@ export default function MessageList() {
     setShowNewMessageIndicator,
   } = useChatStore();
   const {
-  mutate: markMessagesAsRead,
-} = useMarkMessageAsRead();
+    mutate: markMessagesAsRead,
+  } = useMarkMessageAsRead();
   const {
     data,
     isLoading,
@@ -33,30 +35,30 @@ export default function MessageList() {
     bottomRef,
     scrollToBottom,
     saveScrollHeight,
-  restoreScrollPosition,
+    restoreScrollPosition,
   } = useAutoScroll(
     shouldScrollToBottom,
     resetScrollToBottom
   );
-const previousConversationIdRef = useRef<string | null>(null);
-useEffect(() => {
-  const conversationId = selectedConversation?._id;
+  const previousConversationIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const conversationId = selectedConversation?._id;
 
-  if (!conversationId) return;
+    if (!conversationId) return;
 
-  if (
-    previousConversationIdRef.current === conversationId
-  ) {
-    return;
-  }
+    if (
+      previousConversationIdRef.current === conversationId
+    ) {
+      return;
+    }
 
-  previousConversationIdRef.current = conversationId;
+    previousConversationIdRef.current = conversationId;
 
-  markMessagesAsRead(conversationId);
-}, [
-  selectedConversation?._id,
-  markMessagesAsRead,
-]);
+    markMessagesAsRead(conversationId);
+  }, [
+    selectedConversation?._id,
+    markMessagesAsRead,
+  ]);
   // Merge all pages
   const messages = useMemo(() => {
     const seen = new Set<string>();
@@ -74,31 +76,31 @@ useEffect(() => {
         }) ?? []
     );
   }, [data]);
- const hasScrolledInitially = useRef(false);
+  const hasScrolledInitially = useRef(false);
   /**
    * Infinite Scroll
    */
 
-useEffect(() => {
-  if (!selectedConversation) return;
+  useEffect(() => {
+    if (!selectedConversation) return;
 
-  if (isLoading) return;
+    if (isLoading) return;
 
-  if (!messages.length) return;
+    if (!messages.length) return;
 
-  if (hasScrolledInitially.current) return;
+    if (hasScrolledInitially.current) return;
 
-  requestAnimationFrame(() => {
-    scrollToBottom("auto");
-    hasScrolledInitially.current = true;
-  });
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, [
-  selectedConversation?._id,
-  isLoading,
-  messages.length,
-  scrollToBottom,
-]);
+    requestAnimationFrame(() => {
+      scrollToBottom("auto");
+      hasScrolledInitially.current = true;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    selectedConversation?._id,
+    isLoading,
+    messages.length,
+    scrollToBottom,
+  ]);
   useEffect(() => {
     if (!topRef.current) return;
 
@@ -130,7 +132,7 @@ useEffect(() => {
     containerRef,
     topRef,
     saveScrollHeight,
-    ]);
+  ]);
 
   /**
    * Preserve scroll position after loading previous page
@@ -145,11 +147,20 @@ useEffect(() => {
   /**
    * Scroll to bottom when conversation changes
    */
-  
+
   useEffect(() => {
-  hasScrolledInitially.current = false;
-}, [selectedConversation?._id]);
-  
+    hasScrolledInitially.current = false;
+  }, [selectedConversation?._id]);
+  const getMessageDateLabel = (date: string) => {
+    const messageDate = new Date(date);
+    if (isToday(messageDate)) {
+      return "Today";
+    }
+    if (isYesterday(messageDate)) {
+      return "Yesterday";
+    }
+    return format(messageDate, "dd MMMM yyyy");
+  }
   if (!selectedConversation) return null;
 
   if (isLoading) {
@@ -179,7 +190,7 @@ useEffect(() => {
   return (
     <div
       ref={containerRef}
-      className="relative flex-1 overflow-y-auto p-4 space-y-3"
+      className="relative flex-1 overflow-y-auto p-4 space-y-2"
     >
       <div ref={topRef} />
 
@@ -189,12 +200,23 @@ useEffect(() => {
         </div>
       )}
 
-      {messages.map((message) => (
-        <MessageBubble
-          key={message?._id}
-          message={message}
-        />
-      ))}
+      {messages.map((message, index) => {
+        const currentDate = new Date(message.createdAt);
+        const previousMessage = messages[index - 1];
+        const previousDate = previousMessage ? new Date(previousMessage.createdAt) : null;
+        const isNewDate = !previousDate || currentDate.toDateString() !== previousDate.toDateString();
+        return (
+          <div key={message._id}>
+            {isNewDate && (
+              <DateSeparator
+                label={getMessageDateLabel(message.createdAt)}
+              />
+            )}
+
+            <MessageBubble message={message} />
+          </div>
+        )
+      })}
 
       <div ref={bottomRef} />
       <NewMessageIndicator

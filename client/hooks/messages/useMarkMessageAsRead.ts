@@ -34,15 +34,15 @@ export const useMarkMessageAsRead = () => {
           })),
         };
       });
-       queryClient.setQueryData(['conversations'],(oldData:any)=>{
-        if(!oldData) return oldData;
+      queryClient.setQueryData(['conversations'], (oldData: any) => {
+        if (!oldData) return oldData;
         return {
           ...oldData,
-          conversations: oldData.conversations.map((conversation:any)=> conversation._id===conversationId ? {
+          conversations: oldData.conversations.map((conversation: any) => conversation._id === conversationId ? {
             ...conversation,
             unreadCount: 0
           } : conversation
-        )
+          )
         }
       })
     },
