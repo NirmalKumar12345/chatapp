@@ -1,7 +1,7 @@
 "use client";
 
 import { useConversations } from "@/hooks/conversations/useConversations";
-import ConversationItem from "./conversationItem";
+import ConversationItem from "../chat/conversationItem";
 
 export default function ConversationList() {
   const { data, isLoading, isError } = useConversations();

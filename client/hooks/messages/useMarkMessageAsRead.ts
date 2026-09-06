@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { markMessagesAsRead } from "@/services/message.service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/authStore";
@@ -33,6 +34,17 @@ export const useMarkMessageAsRead = () => {
           })),
         };
       });
+       queryClient.setQueryData(['conversations'],(oldData:any)=>{
+        if(!oldData) return oldData;
+        return {
+          ...oldData,
+          conversations: oldData.conversations.map((conversation:any)=> conversation._id===conversationId ? {
+            ...conversation,
+            unreadCount: 0
+          } : conversation
+        )
+        }
+      })
     },
   });
 };

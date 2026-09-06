@@ -3,14 +3,14 @@
 import { useAuthStore } from "@/store/authStore";
 import Image from "next/image";
 import { User } from "lucide-react";
+import NewConversationDialog from "../chat/newConversationDialog";
 
-import NewConversationDialog from "./newConversationDialog";
 
 export default function SidebarHeader() {
   const { user } = useAuthStore();
 
   return (
-    <div className="flex items-center justify-between border-b px-4 py-3">
+    <div className="flex items-center justify-between border-b px-4 py-2">
       {/* Left */}
       <div className="flex items-center gap-3">
         <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-muted">

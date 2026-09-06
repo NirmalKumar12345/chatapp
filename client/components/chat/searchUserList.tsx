@@ -10,7 +10,7 @@ import { useSearchUsers } from "@/hooks/users/useSearchUsers";
 import { useCreateConversation } from "@/hooks/conversations/useConversations";
 import SearchUserCard from "./searchUserCard";
 import { Search } from "lucide-react";
-import SearchUserSkeleton from "./searchUserSkeleton";
+import SearchUserSkeleton from "../sidebar/searchUserSkeleton";
 
 interface Props {
     closeDialog: () => void;

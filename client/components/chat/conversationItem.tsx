@@ -61,15 +61,21 @@ export default function ConversationItem({
                 <h3 className="truncate text-sm font-semibold">
                     {participant?.name}
                 </h3>
-                
+
                 <p className="truncate text-xs text-muted-foreground">
                     {conversation.lastMessage ?? "No messages yet"}
                 </p>
             </div>
-
-            {/* Time */}
-            <div className="text-xs text-muted-foreground">
-                {formattedTime}
+            <div className='flex flex-col items-end gap-1'>
+                {/* Time */}
+                <span className="text-xs text-muted-foreground">
+                    {formattedTime}
+                </span>
+                {conversation.unreadCount > 0 && ( <span className="bg-green-400 text-white text-xs w-fit h-fit px-2 py-[3px] rounded-full text-center">
+                    {
+                        conversation.unreadCount > 999 ? "+999" : conversation.unreadCount
+                    }
+                </span> )}
             </div>
         </div>
     );

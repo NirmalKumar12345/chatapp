@@ -1,5 +1,5 @@
+import Sidebar from "../sidebar/sidebar";
 import ChatSection from "./chatSection";
-import Sidebar from "./sidebar";
 
 export default function ChatLayout() {
   return (

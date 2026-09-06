@@ -1,5 +1,6 @@
 import Conversation from "../models/conversation.js";
 import User from "../models/user.js";
+import Message from '../models/message.js'
 
 export const createConversation = async(req,res,next)=>{
     try{
@@ -53,10 +54,24 @@ export const createConversation = async(req,res,next)=>{
 
 export const getConversation = async(req,res,next)=>{
   try{
+   const userId = req.user._id; 
    const conversations = await Conversation.find({
-    participants: req.user._id
+    participants: userId
    }).populate("participants","name username email profilePic isOnline lastSeen").sort({lastMessageAt: -1});
-   return res.status(200).json({success: true,conversations});
+   const conversationWithUnreadCount = await Promise.all(
+    conversations.map(async(conversation)=>{
+    const unreadCount = await Message.countDocuments({
+      conversation: conversation?._id,
+      receiver: userId,
+      read: false
+    });
+    return {
+      ...conversation.toObject(),
+      unreadCount,
+    };
+    
+   }));
+   return res.status(200).json({success: true,conversations: conversationWithUnreadCount});
   }
   catch(error){
     next(error)

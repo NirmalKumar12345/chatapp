@@ -58,6 +58,7 @@ export const useReceiverMessage = () => {
               ...conversation,
               lastMessage: message.text,
               lastMessageAt: message.createdAt || new Date(),
+              unreadCount: conversation.unreadCount+1,
             };
           }
           return conversation;

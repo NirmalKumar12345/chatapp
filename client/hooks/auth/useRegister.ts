@@ -10,7 +10,7 @@ import { useAuthStore } from "@/store/authStore";
 export const useRegister = () => {
   const router = useRouter();
 
-  const {setUser,setAccessToken}=useAuthStore();
+  const {setUser,setAccessToken,setIsLoggedOut}=useAuthStore();
 
   return useMutation({
     mutationFn: register,
@@ -18,6 +18,7 @@ export const useRegister = () => {
     onSuccess: (data) => {
       setUser(data.user);
       setAccessToken(data.accessToken);  
+      setIsLoggedOut(false);
       toast.success(data.message);
 
       router.push("/chat");

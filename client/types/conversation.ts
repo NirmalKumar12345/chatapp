@@ -6,6 +6,7 @@ export interface Conversation {
   lastMessage: string;
   lastMessageAt: string;
   updatedAt: string;
+  unreadCount: number;
 }
 export interface ConversationResponse {
   success: boolean;

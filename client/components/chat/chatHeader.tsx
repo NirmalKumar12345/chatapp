@@ -20,7 +20,7 @@ export default function ChatHeader() {
   if (!participant) return null;
 
   return (
-    <div className="flex p-1 items-center justify-between border-b px-5">
+    <div className="flex  items-center justify-between border-b px-5 py-2">
       <div className="flex items-center gap-3">
         <div className="relative">
           <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-muted">
