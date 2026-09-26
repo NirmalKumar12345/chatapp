@@ -28,7 +28,20 @@ const messageSchema = mongoose.Schema({
     read:{
         type: Boolean,
         default: false
-    }
+    },
+    edited: {
+        type: Boolean,
+        default: false,
+     },
+    deleted: {
+       type: Boolean,
+       default: false,
+    },
+    replyTo: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Message",
+  default: null,
+}
 },{timestamps: true,});
 
 export default mongoose.model("Message",messageSchema);

@@ -7,7 +7,20 @@ export interface Message {
   receiver: string;
   text: string;
   read: boolean;
+  edited: boolean;
+  deleted: boolean;
   delivered: boolean;
+  replyTo?: {
+    _id: string;
+    text: string;
+    sender:
+      | string
+      | {
+          _id: string;
+          name: string;
+          profilePic?: string;
+        };
+  } | null;
   createdAt: string;
   updatedAt: string;
 }

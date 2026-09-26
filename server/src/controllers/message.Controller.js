@@ -5,7 +5,7 @@ import { io } from "../server.js";
 
 export const sendMessage = async (req,res,next)=>{
     try{const senderId = req.user._id;
-    const {conversationId,receiverId,text}=req.body;
+    const {conversationId,receiverId,text,replyTo}=req.body;
     const conversation = await Conversation.findById(conversationId);
     if(!conversation){
         return res.status(404).json({
@@ -17,13 +17,26 @@ export const sendMessage = async (req,res,next)=>{
         conversation: conversationId,
         sender: senderId,
         receiver: receiverId,
-        text
+        text,
+        replyTo: replyTo || null
     });
     //update conversation
     conversation.lastMessage= text;
     conversation.lastMessageAt = new Date();
     await conversation.save();
-    await message.populate("sender", "name profilePic");
+    await message.populate([
+  {
+    path: "sender",
+    select: "name profilePic",
+  },
+  {
+    path: "replyTo",
+    populate: {
+      path: "sender",
+      select: "name profilePic",
+    },
+  },
+]);
     const receiverSocketId = getReceiverSocketId(receiverId.toString());
     if(receiverSocketId){
         io.to(receiverSocketId).emit("newMessage",message,async()=>{
@@ -62,7 +75,96 @@ export const sendMessage = async (req,res,next)=>{
     }
     
 }
+export const editMessage = async(req,res,next)=>{
+    try {
+     const {messageId}= req.params;
+     const {text} = req.body;
+     const userId = req.user._id;
+     if (!text?.trim()){
+        return res.status(400).json({
+            success: false,
+            message: "Message cannot be empty"
+        })
+     }
+     const message = await Message.findById(messageId);
+     if (!message){
+        return res.status(404).json({
+            success: false,
+            message: "Message not found"
+        })
+     }
+     if (message.sender.toString()!== userId.toString()){
+        return res.status(403).json({
+            success: false,
+            message: "only edit your own message"
+        })
+     }
+     if(message.deleted){
+        return res.status(400).json({
+            success: false,
+            message: "Deleted message cannot be edited"
+        })
+     }
+     message.text= text.trim()
+     message.edited=true
+     await message.save()
+     await message.populate("sender", "name profilePic");
+     const receiverSocketId= getReceiverSocketId(message.receiver.toString());
+     if(receiverSocketId){
+        io.to(receiverSocketId).emit("messageEdited",message)
+     }
+     return res.status(200).json({
+        success:true,
+        message
+     })
 
+    }catch(error){
+        next(error)
+    }
+}
+export const deleteMessage = async(req,res,next)=>{
+    try{
+     const {messageId}= req.params;
+     const userId = req.user._id;
+     const message = await Message.findById(messageId);
+     if (!message){
+        return res.status(404).json({
+            success: false,
+            message: "Message not found"
+        })
+     }
+     if (message.sender.toString()!==userId.toString()){
+        return res.status(400).json({
+            success: false,
+            message: "You can delete your own messages"
+        })
+     }
+     if (message.deleted) {
+      return res.status(400).json({
+        success: false,
+        message: "Message already deleted",
+      });
+    }
+     message.deleted= true;
+     message.text= "This message was deleted"
+     await message.save();
+     const receiverSocketId = getReceiverSocketId(message.receiver.toString());
+     if(receiverSocketId){
+        io.to(receiverSocketId).emit("messageDeleted",{
+            messageId:  message._id.toString(),
+            conversationId: message.conversation.toString()
+        }
+        )
+     }
+     return res.status(200).json({
+        success: true,
+        message
+     })
+    }
+    catch(error){
+        next(error)
+    }
+}
 export const getMessages = async(req,res,next)=>{
     try{
      const page = Number(req.query.page) || 1;

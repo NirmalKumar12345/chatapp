@@ -52,13 +52,13 @@ export const useReceiverMessage = () => {
 
         const conversations = oldData.conversations.map((conversation: any) => {
           const conversationId = conversation._id?.toString?.() ?? conversation._id;
-          
+
           if (conversationId === messageConversationId) {
             return {
               ...conversation,
               lastMessage: message.text,
               lastMessageAt: message.createdAt || new Date(),
-              unreadCount: conversation.unreadCount+1,
+              unreadCount: conversation.unreadCount + 1,
             };
           }
           return conversation;
@@ -144,13 +144,71 @@ export const useReceiverMessage = () => {
         };
       });
     };
+    const handleMessageEdited = (updatedMessage: any) => {
+      queryClient.setQueryData(
+        ["messages", updatedMessage.conversation],
+        (oldData: any) => {
+          if (!oldData) return oldData;
+
+          return {
+            ...oldData,
+
+            pages: oldData.pages.map((page: any) => ({
+              ...page,
+
+              messages: page.messages.map((message: any) =>
+                message._id === updatedMessage._id
+                  ? updatedMessage
+                  : message
+              ),
+            })),
+          };
+        }
+      );
+    };
+    const handleMessageDeleted = ({
+      messageId,
+      conversationId,
+    }: {
+      messageId: string;
+      conversationId: string;
+    }) => {
+      queryClient.setQueryData(
+        ["messages", conversationId],
+        (oldData: any) => {
+          if (!oldData) return oldData;
+
+          return {
+            ...oldData,
+
+            pages: oldData.pages.map((page: any) => ({
+              ...page,
+
+              messages: page.messages.map((message: any) =>
+                message._id === messageId
+                  ? {
+                    ...message,
+                    text: "This message was deleted",
+                    deleted: true,
+                  }
+                  : message
+              ),
+            })),
+          };
+        }
+      );
+    };
     socket.on("newMessage", handleNewMessage);
-    socket.on("messageDelivered",handleMessageDelivered);
-    socket.on("messagesRead",handleMessagesRead);
+    socket.on("messageDelivered", handleMessageDelivered);
+    socket.on("messagesRead", handleMessagesRead);
+    socket.on("messageEdited", handleMessageEdited);
+    socket.on("messageDeleted", handleMessageDeleted);
     return () => {
       socket.off("newMessage", handleNewMessage);
       socket.off("messageDelivered", handleMessageDelivered);
       socket.off("messagesRead", handleMessagesRead);
+      socket.off("messageEdited", handleMessageEdited);
+      socket.off("messageDeleted", handleMessageDeleted);
     };
   }, [queryClient, selectedConversation, triggerScrollToBottom, user, markMessagesAsRead]);
 };

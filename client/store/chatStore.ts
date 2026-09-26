@@ -1,18 +1,19 @@
 import { create } from "zustand";
 import { Conversation } from "@/types/conversation";
+import { Message } from "@/types/message";
 
 interface ChatStore {
   selectedConversation: Conversation | null;
 
   shouldScrollToBottom: boolean;
-
+  replyingTo: Message | null;
   showNewMessageIndicator: boolean;
   isTyping: boolean;
 
   setSelectedConversation: (
     conversation: Conversation | null
   ) => void;
-
+  setReplyingTo: (message: Message | null) => void;
   triggerScrollToBottom: () => void;
 
   resetScrollToBottom: () => void;
@@ -30,6 +31,12 @@ export const useChatStore = create<ChatStore>((set) => ({
 
   showNewMessageIndicator: false,
   isTyping: false,
+  replyingTo: null,
+
+setReplyingTo: (message) =>
+  set({
+    replyingTo: message,
+  }),
   setIsTyping: (typing) =>
     set({
       isTyping: typing,
@@ -38,6 +45,7 @@ export const useChatStore = create<ChatStore>((set) => ({
     set({
       selectedConversation: conversation,
       shouldScrollToBottom: true,
+      replyingTo: null,
       showNewMessageIndicator: false,
     }),
 

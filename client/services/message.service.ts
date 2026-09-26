@@ -17,6 +17,23 @@ export const markMessagesAsRead = async (
   const response = await axiosInstance.patch(
     `/messages/${conversationId}/read`
   );
-
   return response.data;
 };
+
+export interface EditMessagePayload {
+  messageId: string;
+  text: string;
+}
+
+export const editMessage = async ({
+  messageId,
+  text,
+}: EditMessagePayload)=>{
+  const response = await axiosInstance.patch(`/messages/${messageId}`, { text });
+  return response.data;
+}
+
+export const deleteMessage = async (messageId: string)=>{
+  const response = await axiosInstance.delete(`/messages/${messageId}`);
+  return response.data;
+}
