@@ -10,6 +10,12 @@ import { useEditMessage } from "@/hooks/messages/useEditMessage";
 import { useDeleteMessage } from "@/hooks/messages/useDeleteMessage";
 import { toast } from "sonner";
 import { useChatStore } from "@/store/chatStore";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface MessageBubbleProps {
   message: Message;
@@ -20,8 +26,8 @@ export default function MessageBubble({
 }: MessageBubbleProps) {
   const { user } = useAuthStore();
   // const [replyingTo, setReplyingTo] = useState<Message | null>(null);
-  const { setReplyingTo } = useChatStore();
-  const [showMenu, setShowMenu] = useState(false);
+  const { setReplyingTo, setHighlightedMessageId,
+  } = useChatStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(message.text);
 
@@ -40,9 +46,12 @@ export default function MessageBubble({
   const handleEdit = () => {
     setEditText(message.text);
     setIsEditing(true);
-    setShowMenu(false);
   };
+  const handleReplyMessageClick = () => {
+    if (!message.replyTo?._id) return;
 
+    setHighlightedMessageId(message.replyTo._id);
+  };
   const handleCancelEdit = () => {
     setEditText(message.text);
     setIsEditing(false);
@@ -50,14 +59,12 @@ export default function MessageBubble({
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(message.text);
-      setShowMenu(false);
     } catch (error) {
       toast.error(`faild to copy message: ${error}`);
     }
   };
   const handleReply = () => {
     setReplyingTo(message);
-    setShowMenu(false);
   };
   const handleSaveEdit = () => {
     const trimmedText = editText.trim();
@@ -83,8 +90,6 @@ export default function MessageBubble({
   };
 
   const handleDelete = () => {
-    setShowMenu(false);
-
     deleteMessage(message._id);
   };
 
@@ -165,64 +170,63 @@ export default function MessageBubble({
               : "rounded-bl-sm bg-muted"
               }`}
           >
-            <button
-              type="button"
-              onClick={() => setShowMenu((value) => !value)}
-              className="absolute right-1 top-1 cursor-pointer rounded-full p-1 opacity-0 transition-opacity hover:bg-black/10 group-hover:opacity-100"
-              aria-label="Message options"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className="absolute right-1 top-1 cursor-pointer rounded-full p-1 opacity-100 transition-opacity hover:bg-black/10 sm:opacity-0 sm:group-hover:opacity-100"
+                aria-label="Message options"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </DropdownMenuTrigger>
 
-            {showMenu && !message.deleted && (
-              <div className="absolute right-0 top-8 z-20 w-36 overflow-hidden rounded-lg border bg-background py-1 text-foreground shadow-lg">
-
-                {/* Reply - everyone */}
-                <button
-                  type="button"
-                  onClick={handleReply}
-                  className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                >
+              <DropdownMenuContent
+                align={isOwnMessage ? "end" : "start"}
+                side="bottom"
+                className="w-36"
+              >
+                <DropdownMenuItem onClick={handleReply} className="cursor-pointer">
                   <Reply className="h-4 w-4" />
                   Reply
-                </button>
+                </DropdownMenuItem>
 
-                {/* Copy - everyone */}
-                <button
-                  type="button"
-                  onClick={handleCopy}
-                  className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                >
+                <DropdownMenuItem onClick={handleCopy} className="cursor-pointer">
                   <Copy className="h-4 w-4" />
                   Copy
-                </button>
+                </DropdownMenuItem>
 
-                {/* Edit - own only */}
                 {isOwnMessage && (
-                  <button
-                    type="button"
-                    onClick={handleEdit}
-                    className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-                  >
+                  <DropdownMenuItem onClick={handleEdit} className="cursor-pointer">
                     <Pencil className="h-4 w-4" />
                     Edit
-                  </button>
+                  </DropdownMenuItem>
                 )}
 
-                {/* Delete - own only */}
                 {isOwnMessage && (
-                  <button
-                    type="button"
+                  <DropdownMenuItem
                     onClick={handleDelete}
                     disabled={isDeletingMessage}
-                    className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-muted"
+                    variant="destructive"
+                    className="cursor-pointer"
                   >
                     <Trash2 className="h-4 w-4" />
                     {isDeletingMessage ? "Deleting..." : "Delete"}
-                  </button>
+                  </DropdownMenuItem>
                 )}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-              </div>
+            {message.replyTo && (
+              <button
+                type="button"
+                onClick={handleReplyMessageClick}
+                className={`mb-2 block w-full max-w-full cursor-pointer rounded-r-md border-l-2 px-3 py-2 text-left transition-colors ${isOwnMessage
+                    ? "border-primary-foreground/70 bg-primary-foreground/10 hover:bg-primary-foreground/20"
+                    : "border-primary/70 bg-foreground/5 hover:bg-foreground/10"
+                  }`}
+              >
+                <p className="mt-0.5 line-clamp-2 whitespace-pre-wrap wrap-break-words text-xs leading-4 opacity-75">
+                  {message.replyTo.text}
+                </p>
+              </button>
             )}
 
             <p className="whitespace-pre-wrap wrap-break-words pr-5 text-sm">

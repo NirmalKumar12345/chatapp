@@ -17,6 +17,8 @@ export default function MessageList() {
     resetScrollToBottom,
     showNewMessageIndicator,
     setShowNewMessageIndicator,
+    highlightedMessageId,
+    setHighlightedMessageId,
   } = useChatStore();
   const {
     mutate: markMessagesAsRead,
@@ -41,6 +43,7 @@ export default function MessageList() {
     resetScrollToBottom
   );
   const previousConversationIdRef = useRef<string | null>(null);
+  const jumpingToMessageRef = useRef(false);
   useEffect(() => {
     const conversationId = selectedConversation?._id;
 
@@ -59,6 +62,59 @@ export default function MessageList() {
     selectedConversation?._id,
     markMessagesAsRead,
   ]);
+useEffect(() => {
+  if (!highlightedMessageId) return;
+
+  const findAndScrollToMessage = () => {
+    const messageElement = document.querySelector(
+      `[data-message-id="${highlightedMessageId}"]`
+    );
+
+    if (messageElement) {
+      messageElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      messageElement.classList.add("message-highlight");
+
+      const timeout = setTimeout(() => {
+        messageElement.classList.remove("message-highlight");
+        setHighlightedMessageId(null);
+        jumpingToMessageRef.current = false;
+      }, 1500);
+
+      return () => {
+        clearTimeout(timeout);
+        messageElement.classList.remove("message-highlight");
+      };
+    }
+
+    if (hasNextPage && !isFetchingNextPage) {
+      jumpingToMessageRef.current = true;
+
+      saveScrollHeight();
+
+      fetchNextPage();
+    } else if (!hasNextPage) {
+      setHighlightedMessageId(null);
+      jumpingToMessageRef.current = false;
+    }
+  };
+
+  const frame = requestAnimationFrame(findAndScrollToMessage);
+
+  return () => {
+    cancelAnimationFrame(frame);
+  };
+}, [
+  highlightedMessageId,
+  hasNextPage,
+  isFetchingNextPage,
+  fetchNextPage,
+  saveScrollHeight,
+  setHighlightedMessageId,
+]);
   // Merge all pages
   const messages = useMemo(() => {
     const seen = new Set<string>();
@@ -138,11 +194,17 @@ export default function MessageList() {
    * Preserve scroll position after loading previous page
    */
   useEffect(() => {
-    if (!isFetchingNextPage) {
+  if (isFetchingNextPage) return;
 
-      restoreScrollPosition();
-    }
-  }, [isFetchingNextPage, restoreScrollPosition]);
+  if (jumpingToMessageRef.current) {
+    return;
+  }
+
+  restoreScrollPosition();
+}, [
+  isFetchingNextPage,
+  restoreScrollPosition,
+]);
 
   /**
    * Scroll to bottom when conversation changes
@@ -206,7 +268,7 @@ export default function MessageList() {
         const previousDate = previousMessage ? new Date(previousMessage.createdAt) : null;
         const isNewDate = !previousDate || currentDate.toDateString() !== previousDate.toDateString();
         return (
-          <div key={message._id}>
+          <div key={message._id} data-message-id={message._id}>
             {isNewDate && (
               <DateSeparator
                 label={getMessageDateLabel(message.createdAt)}

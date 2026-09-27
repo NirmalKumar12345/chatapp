@@ -4,7 +4,7 @@ import { Message } from "@/types/message";
 
 interface ChatStore {
   selectedConversation: Conversation | null;
-
+  highlightedMessageId: string | null;
   shouldScrollToBottom: boolean;
   replyingTo: Message | null;
   showNewMessageIndicator: boolean;
@@ -17,7 +17,7 @@ interface ChatStore {
   triggerScrollToBottom: () => void;
 
   resetScrollToBottom: () => void;
-
+  setHighlightedMessageId: (messageId: string | null) => void;
   setShowNewMessageIndicator: (
     value: boolean
   ) => void;
@@ -26,13 +26,16 @@ interface ChatStore {
 
 export const useChatStore = create<ChatStore>((set) => ({
   selectedConversation: null,
-
+  highlightedMessageId: null,
   shouldScrollToBottom: false,
 
   showNewMessageIndicator: false,
   isTyping: false,
   replyingTo: null,
-
+setHighlightedMessageId: (messageId) =>
+  set({
+    highlightedMessageId: messageId,
+  }),
 setReplyingTo: (message) =>
   set({
     replyingTo: message,
@@ -46,6 +49,7 @@ setReplyingTo: (message) =>
       selectedConversation: conversation,
       shouldScrollToBottom: true,
       replyingTo: null,
+      highlightedMessageId: null,
       showNewMessageIndicator: false,
     }),
 

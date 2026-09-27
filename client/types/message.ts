@@ -14,12 +14,12 @@ export interface Message {
     _id: string;
     text: string;
     sender:
-      | string
-      | {
-          _id: string;
-          name: string;
-          profilePic?: string;
-        };
+    | string
+    | {
+      _id: string;
+      name: string;
+      profilePic?: string;
+    };
   } | null;
   createdAt: string;
   updatedAt: string;
@@ -38,4 +38,5 @@ export interface SendMessagePayload {
   conversationId: string;
   receiverId: string;
   text: string;
+  replyTo?: string | null;
 }

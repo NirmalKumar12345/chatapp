@@ -128,3 +128,24 @@
     @apply font-sans;
   }
 }
+.message-highlight {
+  animation: message-highlight 1.5s ease-in-out;
+}
+
+@keyframes message-highlight {
+  0% {
+    background-color: transparent;
+  }
+
+  25% {
+    background-color: hsl(var(--primary) / 0.18);
+  }
+
+  60% {
+    background-color: hsl(var(--primary) / 0.12);
+  }
+
+  100% {
+    background-color: transparent;
+  }
+}

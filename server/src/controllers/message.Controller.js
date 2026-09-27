@@ -186,6 +186,14 @@ export const getMessages = async(req,res,next)=>{
      const [messages,totalMessages]=await Promise.all([
         Message.find({conversation:req.params.conversationId})
         .populate("sender","name profilePic")
+        .populate({
+            path: "replyTo",
+            select: "text sender",
+            populate: {
+                path: "sender",
+                select: "name profilePic"
+            }
+        })
         .sort({createdAt:-1})
         .skip((page-1)*limit)
         .limit(limit),
