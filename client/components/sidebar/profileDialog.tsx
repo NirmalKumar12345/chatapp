@@ -139,7 +139,7 @@ export default function ProfileDialog() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overscroll-contain overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>My profile</DialogTitle>
           <DialogDescription>
@@ -147,19 +147,47 @@ export default function ProfileDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col items-center gap-2 py-3">
-          <div className="flex size-24 items-center justify-center overflow-hidden rounded-full bg-muted ring-4 ring-primary/10">
-            {user.profilePic ? (
-              <Image
-                src={user.profilePic}
-                alt={user.name}
-                width={96}
-                height={96}
-                className="size-full object-cover"
+        <div className="flex flex-col items-center gap-2">
+          <div className="relative">
+            <div className="flex size-20 items-center justify-center overflow-hidden rounded-full bg-muted ring-4 ring-primary/10">
+              {user.profilePic ? (
+                <Image
+                  src={user.profilePic}
+                  alt={user.name}
+                  width={96}
+                  height={96}
+                  className="size-full object-cover"
+                />
+              ) : (
+                <User className="size-11 text-muted-foreground" />
+              )}
+            </div>
+            {isEditing && (<Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon"
+                    className="absolute bottom-0 right-0 size-6 cursor-pointer rounded-full border-2 border-background shadow-sm"
+                    disabled={uploadProfilePicture.isPending}
+                    aria-label={
+                      uploadProfilePicture.isPending
+                        ? "Uploading profile photo"
+                        : "Change profile photo"
+                    }
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Camera className="size-4" />
+                  </Button>
+                }
               />
-            ) : (
-              <User className="size-11 text-muted-foreground" />
-            )}
+              <TooltipContent side={"right"}>
+                {uploadProfilePicture.isPending
+                  ? "Uploading photo..."
+                  : "Change profile photo"}
+              </TooltipContent>
+            </Tooltip>)}
           </div>
           <Input
             ref={fileInputRef}
@@ -173,20 +201,6 @@ export default function ProfileDialog() {
               event.currentTarget.value = "";
             }}
           />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={uploadProfilePicture.isPending}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Camera />
-            {uploadProfilePicture.isPending ? "Uploading photo..." : "Change photo"}
-          </Button>
-          <p className="text-xs text-muted-foreground">
-            JPEG, PNG, or WebP; up to 5 MB.
-          </p>
-          <h3 className="text-lg font-semibold">{user.name}</h3>
           <p className="flex items-center gap-1 text-sm text-muted-foreground">
             <AtSign className="size-3.5" />
             {user.username}
@@ -194,7 +208,7 @@ export default function ProfileDialog() {
         </div>
 
         {isEditing ? (
-          <form onSubmit={handleProfileSubmit} className="grid gap-4">
+          <form onSubmit={handleProfileSubmit} className="grid gap-2">
             <div className="grid gap-2">
               <Label htmlFor="profile-name">Name</Label>
               <Input
@@ -235,6 +249,7 @@ export default function ProfileDialog() {
               <Button
                 type="button"
                 variant="outline"
+                className='cursor-pointer'
                 disabled={updateProfile.isPending}
                 onClick={() => {
                   setName(user.name);
@@ -245,7 +260,7 @@ export default function ProfileDialog() {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={updateProfile.isPending}>
+              <Button type="submit" className='cursor-pointer' disabled={updateProfile.isPending}>
                 {updateProfile.isPending ? "Saving..." : "Save changes"}
               </Button>
             </div>
@@ -263,7 +278,7 @@ export default function ProfileDialog() {
             </div>
             <Button
               type="button"
-              className="w-full"
+              className="w-full cursor-pointer"
               onClick={() => setIsEditing(true)}
             >
               Edit profile

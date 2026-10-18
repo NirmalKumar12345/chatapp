@@ -7,6 +7,10 @@ export const getMyprofile = async (): Promise<UserProfileResponse> => {
   const response = await axiosInstance.get<UserProfileResponse>("/users/getMyProfile");
   return response.data;
 };
+export const getUserById = async (id: string): Promise<UserProfileResponse>=>{
+  const response = await axiosInstance.get<UserProfileResponse>("/users/getUserById/"+id);
+  return response.data;
+}
 export const updateProfile = async (
   userData: UserProfileUpdate
 ): Promise<UserProfileResponse> => {

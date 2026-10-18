@@ -1,4 +1,5 @@
 import {
+    getUserById,
     getMyprofile,
     updateProfile,
     uploadProfilePicture,
@@ -18,6 +19,14 @@ export const useMyProfile = () => {
         queryKey: userProfileQueryKey(userId ?? ""),
         queryFn: getMyprofile,
         enabled: Boolean(userId),
+    });
+};
+
+export const useUserProfileById = (userId?: string, enabled = true) => {
+    return useQuery({
+        queryKey: ["user-profile", userId],
+        queryFn: () => getUserById(userId!),
+        enabled: Boolean(userId) && enabled,
     });
 };
 

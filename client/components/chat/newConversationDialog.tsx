@@ -25,6 +25,7 @@ export default function NewConversationDialog() {
       <DialogTrigger asChild>
         <Button
           size="icon"
+          className="cursor-pointer"
           variant="ghost"
         >
           <MessageSquarePlus className="h-5 w-5" />
