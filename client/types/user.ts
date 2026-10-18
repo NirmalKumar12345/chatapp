@@ -9,3 +9,11 @@ export interface User {
   isOnline: boolean;
   lastSeen: Date;
 }
+
+export type UserProfileUpdate = Partial<Pick<User, "name" | "username" | "bio">>;
+
+export interface UserProfileResponse {
+  success: boolean;
+  message?: string;
+  user: User;
+}
