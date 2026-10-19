@@ -6,17 +6,25 @@ import { useMessages } from "@/hooks/messages/useMessages";
 import { useChatStore } from "@/store/chatStore";
 import MessageBubble from "./messageBubble";
 import { useAutoScroll } from "@/hooks/messages/useAutoScroll";
-import NewMessageIndicator from "./newMessageIndicator";
 import { format, isToday, isYesterday } from "date-fns";
 import DateSeparator from "./dateSeparator";
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from "@/components/ui/message-scroller";
+import { Marker, MarkerContent } from "@/components/ui/marker";
 
 export default function MessageList() {
   const {
     selectedConversation,
     shouldScrollToBottom,
     resetScrollToBottom,
-    showNewMessageIndicator,
     setShowNewMessageIndicator,
+    setIsAtBottom,
     highlightedMessageId,
     setHighlightedMessageId,
   } = useChatStore();
@@ -36,14 +44,13 @@ export default function MessageList() {
     topRef,
     bottomRef,
     scrollToBottom,
-    saveScrollHeight,
-    restoreScrollPosition,
   } = useAutoScroll(
     shouldScrollToBottom,
     resetScrollToBottom
   );
   const previousConversationIdRef = useRef<string | null>(null);
   const jumpingToMessageRef = useRef(false);
+  const loadingOlderRef = useRef(false);
   useEffect(() => {
     const conversationId = selectedConversation?._id;
 
@@ -92,9 +99,6 @@ useEffect(() => {
 
     if (hasNextPage && !isFetchingNextPage) {
       jumpingToMessageRef.current = true;
-
-      saveScrollHeight();
-
       fetchNextPage();
     } else if (!hasNextPage) {
       setHighlightedMessageId(null);
@@ -112,7 +116,6 @@ useEffect(() => {
   hasNextPage,
   isFetchingNextPage,
   fetchNextPage,
-  saveScrollHeight,
   setHighlightedMessageId,
 ]);
   // Merge all pages
@@ -158,27 +161,68 @@ useEffect(() => {
     scrollToBottom,
   ]);
   useEffect(() => {
-    if (!topRef.current) return;
+    const viewport = containerRef.current;
+    const topSentinel = topRef.current;
+
+    if (!viewport || !topSentinel || isFetchingNextPage) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (
-          entry.isIntersecting &&
-          hasNextPage &&
-          !isFetchingNextPage
-        ) {
-          saveScrollHeight();
+          if (!entry.isIntersecting) {
+            loadingOlderRef.current = false;
+            return;
+          }
 
-          fetchNextPage();
+        if (
+          hasNextPage &&
+            !isFetchingNextPage &&
+          !loadingOlderRef.current
+        ) {
+          loadingOlderRef.current = true;
+          const viewportTop = viewport.getBoundingClientRect().top;
+          const visibleAnchor = Array.from(
+            viewport.querySelectorAll<HTMLElement>("[data-message-id]")
+          ).find((message) => {
+            return message.getBoundingClientRect().bottom > viewportTop;
+          });
+          const anchorId = visibleAnchor?.dataset.messageId;
+          const anchorTop = visibleAnchor?.getBoundingClientRect().top;
+
+          fetchNextPage().then((result) => {
+            if (result.isError) {
+              loadingOlderRef.current = false;
+              return;
+            }
+
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                const currentViewport = containerRef.current;
+                if (!currentViewport) return;
+
+                if (!anchorId || anchorTop === undefined) return;
+
+                const currentAnchor = Array.from(
+                  currentViewport.querySelectorAll<HTMLElement>(
+                    "[data-message-id]"
+                  )
+                ).find((message) => message.dataset.messageId === anchorId);
+
+                if (!currentAnchor) return;
+
+                currentViewport.scrollTop +=
+                  currentAnchor.getBoundingClientRect().top - anchorTop;
+              });
+            });
+          });
         }
       },
       {
-        root: containerRef?.current,
-        rootMargin: "100px",
+        root: viewport,
+        rootMargin: "100px 0px 0px 0px",
       }
     );
 
-    observer.observe(topRef.current);
+    observer.observe(topSentinel);
 
     return () => observer.disconnect();
   }, [
@@ -187,24 +231,7 @@ useEffect(() => {
     isFetchingNextPage,
     containerRef,
     topRef,
-    saveScrollHeight,
   ]);
-
-  /**
-   * Preserve scroll position after loading previous page
-   */
-  useEffect(() => {
-  if (isFetchingNextPage) return;
-
-  if (jumpingToMessageRef.current) {
-    return;
-  }
-
-  restoreScrollPosition();
-}, [
-  isFetchingNextPage,
-  restoreScrollPosition,
-]);
 
   /**
    * Scroll to bottom when conversation changes
@@ -212,6 +239,7 @@ useEffect(() => {
 
   useEffect(() => {
     hasScrolledInitially.current = false;
+    loadingOlderRef.current = false;
   }, [selectedConversation?._id]);
   const getMessageDateLabel = (date: string) => {
     const messageDate = new Date(date);
@@ -227,67 +255,106 @@ useEffect(() => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 items-center justify-center">
-        Loading messages...
+      <div className="flex min-h-0 flex-1 items-center justify-center px-4">
+        <Marker variant="border" className="max-w-xs justify-center py-3">
+          <MarkerContent>Loading your conversation...</MarkerContent>
+        </Marker>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="flex flex-1 items-center justify-center text-red-500">
-        Failed to load messages.
+      <div className="flex min-h-0 flex-1 items-center justify-center px-4">
+        <Marker variant="border" className="max-w-xs justify-center py-3 text-destructive">
+          <MarkerContent>Unable to load messages.</MarkerContent>
+        </Marker>
       </div>
     );
   }
 
   if (!messages.length) {
     return (
-      <div className="flex flex-1 items-center justify-center text-muted-foreground">
-        No messages yet. Start the conversation 👋
+      <div className="flex min-h-0 flex-1 items-center justify-center px-4">
+        <Marker variant="border" className="max-w-xs justify-center py-3">
+          <MarkerContent>No messages yet. Send the first one.</MarkerContent>
+        </Marker>
       </div>
     );
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="relative flex-1 overflow-y-auto p-4 space-y-2"
-    >
-      <div ref={topRef} />
+    <MessageScrollerProvider autoScroll={false}>
+      <MessageScroller className="min-h-0 flex-1 bg-muted/15">
+        <MessageScrollerViewport
+          ref={containerRef}
+          className="scrollbar-thin"
+          onScroll={(event) => {
+            const viewport = event.currentTarget;
+            const isAtBottom =
+              viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight < 120;
+            setIsAtBottom(isAtBottom);
 
-      {isFetchingNextPage && (
-        <div className="py-2 text-center text-sm text-muted-foreground">
-          Loading older messages...
-        </div>
-      )}
+            if (isAtBottom) {
+              setShowNewMessageIndicator(false);
+            }
+          }}
+        >
+          <MessageScrollerContent
+            className="gap-3 px-4 py-5 md:px-6"
+            spacerClassName="flex-1"
+          >
+            <div
+              ref={topRef}
+              className="h-px w-full shrink-0"
+              aria-hidden="true"
+            />
 
-      {messages.map((message, index) => {
-        const currentDate = new Date(message.createdAt);
-        const previousMessage = messages[index - 1];
-        const previousDate = previousMessage ? new Date(previousMessage.createdAt) : null;
-        const isNewDate = !previousDate || currentDate.toDateString() !== previousDate.toDateString();
-        return (
-          <div key={message._id} data-message-id={message._id}>
-            {isNewDate && (
-              <DateSeparator
-                label={getMessageDateLabel(message.createdAt)}
-              />
+            {isFetchingNextPage && (
+              <Marker variant="separator" className="py-2">
+                <MarkerContent>Loading older messages...</MarkerContent>
+              </Marker>
             )}
 
-            <MessageBubble message={message} />
-          </div>
-        )
-      })}
+            {messages.map((message, index) => {
+              const currentDate = new Date(message.createdAt);
+              const previousMessage = messages[index - 1];
+              const previousDate = previousMessage
+                ? new Date(previousMessage.createdAt)
+                : null;
+              const isNewDate =
+                !previousDate ||
+                currentDate.toDateString() !== previousDate.toDateString();
 
-      <div ref={bottomRef} />
-      <NewMessageIndicator
-        show={showNewMessageIndicator}
-        onClick={() => {
-          scrollToBottom("smooth");
-          setShowNewMessageIndicator(false);
-        }}
-      />
-    </div>
+              return (
+                <MessageScrollerItem
+                  key={message._id}
+                  messageId={message._id}
+                  className="w-full"
+                >
+                  {isNewDate && (
+                    <DateSeparator
+                      label={getMessageDateLabel(message.createdAt)}
+                    />
+                  )}
+                  <MessageBubble message={message} />
+                </MessageScrollerItem>
+              );
+            })}
+
+            <div
+              ref={bottomRef}
+              className="h-px w-full shrink-0"
+              aria-hidden="true"
+            />
+          </MessageScrollerContent>
+        </MessageScrollerViewport>
+        <MessageScrollerButton
+          direction="end"
+          aria-label="Scroll to latest message"
+          onClick={() => setShowNewMessageIndicator(false)}
+        />
+      </MessageScroller>
+    </MessageScrollerProvider>
   );
 }
