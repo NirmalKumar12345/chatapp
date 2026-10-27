@@ -110,22 +110,6 @@ export default function MessageBubble({
       align={isOwnMessage ? "end" : "start"}
       className="items-end gap-2"
     >
-      {!isOwnMessage && (
-        <MessageAvatar className="mb-4 size-8 border border-border/70">
-          {message.sender.profilePic ? (
-            <Image
-              src={message.sender.profilePic}
-              alt=""
-              width={32}
-              height={32}
-              className="size-full object-cover"
-            />
-          ) : (
-            <User className="size-4 text-muted-foreground" />
-          )}
-        </MessageAvatar>
-      )}
-
       <MessageContent className="w-fit max-w-[min(82%,42rem)] gap-0">
         {isEditing ? (
           <div className="min-w-0 rounded-2xl bg-background p-2 shadow-sm ring-1 ring-border sm:min-w-65">
