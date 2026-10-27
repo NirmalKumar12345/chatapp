@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export default function ChatHeader() {
   const { selectedConversation, isTyping } = useChatStore();
@@ -45,17 +46,28 @@ export default function ChatHeader() {
         >
           <div className="relative">
             <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-muted">
-              {participant.profilePic ? (
-                <Image
+                <Tooltip>
+            <TooltipTrigger
+              render={
+                <span className="flex cursor-pointer size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted">
+                  {participant.profilePic ? (
+                    <Image
                   src={participant.profilePic}
                   alt=""
                   width={48}
                   height={48}
                   className="h-full w-full object-cover"
                 />
-              ) : (
-                <User className="h-6 w-6 text-muted-foreground" />
-              )}
+                  ) : (
+                    <User className="size-6 text-muted-foreground" />
+                  )}
+                </span>
+              }
+            />
+            <TooltipContent>
+              <p>View profile</p>
+            </TooltipContent>
+          </Tooltip>
             </div>
 
             {isOnline && (

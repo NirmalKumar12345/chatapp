@@ -100,7 +100,7 @@ export default function MessageInput() {
   };
 
   return (
-    <div className="shrink-0 border-t bg-background/95 px-3 py-3 md:px-5 md:py-4">
+    <div className="shrink-0 border-t bg-background/95 px-3 py-3 md:px-5 md:py-3">
 
       {/* Reply Preview */}
       {replyingTo && (
@@ -140,7 +140,7 @@ export default function MessageInput() {
               : "Type a message..."
           }
           value={text}
-          className="h-11 min-w-0 rounded-xl border-border/70 bg-muted/40 px-4 shadow-none transition-colors focus-visible:bg-background"
+          className="h-auto min-w-0 rounded-xl border-border/70 bg-muted/40 px-4 shadow-none transition-colors focus-visible:bg-background"
           onChange={(e) => handleTyping(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
@@ -153,7 +153,7 @@ export default function MessageInput() {
         <Button
           type="button"
           size="icon"
-          className="size-11 cursor-pointer rounded-xl"
+          className="size-8 cursor-pointer rounded-xl"
           onClick={handleSend}
           disabled={!text.trim() || isPending}
           aria-label={isPending ? "Sending message" : "Send message"}
