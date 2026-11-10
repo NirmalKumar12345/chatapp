@@ -6,6 +6,7 @@ interface ChatStore {
   selectedConversation: Conversation | null;
   highlightedMessageId: string | null;
   shouldScrollToBottom: boolean;
+  isAtBottom: boolean;
   replyingTo: Message | null;
   showNewMessageIndicator: boolean;
   isTyping: boolean;
@@ -15,6 +16,7 @@ interface ChatStore {
   ) => void;
   setReplyingTo: (message: Message | null) => void;
   triggerScrollToBottom: () => void;
+  setIsAtBottom: (isAtBottom: boolean) => void;
 
   resetScrollToBottom: () => void;
   setHighlightedMessageId: (messageId: string | null) => void;
@@ -28,6 +30,7 @@ export const useChatStore = create<ChatStore>((set) => ({
   selectedConversation: null,
   highlightedMessageId: null,
   shouldScrollToBottom: false,
+  isAtBottom: true,
 
   showNewMessageIndicator: false,
   isTyping: false,
@@ -48,6 +51,7 @@ setReplyingTo: (message) =>
     set({
       selectedConversation: conversation,
       shouldScrollToBottom: true,
+      isAtBottom: true,
       replyingTo: null,
       highlightedMessageId: null,
       showNewMessageIndicator: false,
@@ -57,6 +61,9 @@ setReplyingTo: (message) =>
     set({
       shouldScrollToBottom: true,
     }),
+
+  setIsAtBottom: (isAtBottom) =>
+    set({ isAtBottom }),
 
   resetScrollToBottom: () =>
     set({

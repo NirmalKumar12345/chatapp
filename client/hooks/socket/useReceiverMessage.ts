@@ -10,7 +10,6 @@ import { useMarkMessageAsRead } from "@/hooks/messages/useMarkMessageAsRead";
 export const useReceiverMessage = () => {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
-  const { selectedConversation, triggerScrollToBottom } = useChatStore();
   const { mutate: markMessagesAsRead } = useMarkMessageAsRead();
 
   useEffect(() => {
@@ -18,11 +17,12 @@ export const useReceiverMessage = () => {
       const senderId = message.sender?._id?.toString?.() ?? message.sender?._id;
       const currentUserId = user?._id?.toString?.() ?? user?._id;
       const messageConversationId = message.conversation?.toString?.() ?? message.conversation;
-      const selectedConversationId = selectedConversation?._id?.toString?.() ?? selectedConversation?._id;
+      const chatState = useChatStore.getState();
+      const selectedConversationId = chatState.selectedConversation?._id?.toString?.() ?? chatState.selectedConversation?._id;
 
       if (messageConversationId === selectedConversationId) {
         queryClient.setQueryData(
-          ["messages", selectedConversation?._id],
+          ["messages", messageConversationId],
           (old: any) => {
             if (!old) return old;
 
@@ -43,6 +43,12 @@ export const useReceiverMessage = () => {
 
         if (senderId && currentUserId && senderId !== currentUserId) {
           markMessagesAsRead(message.conversation);
+
+          if (chatState.isAtBottom) {
+            chatState.triggerScrollToBottom();
+          } else {
+            chatState.setShowNewMessageIndicator(true);
+          }
         }
       }
 
@@ -76,15 +82,6 @@ export const useReceiverMessage = () => {
       });
 
       acknowledge();
-      triggerScrollToBottom();
-      /**
-       * Later:
-       *
-       * if (isNearBottom())
-       *     triggerScrollToBottom()
-       * else
-       *     setShowNewMessageIndicator(true)
-       */
     };
     const handleMessageDelivered = (payload: { message?: string; messageId?: string; conversationId: string }) => {
       const deliveredMessageId = payload.messageId ?? payload.message;
@@ -210,5 +207,5 @@ export const useReceiverMessage = () => {
       socket.off("messageEdited", handleMessageEdited);
       socket.off("messageDeleted", handleMessageDeleted);
     };
-  }, [queryClient, selectedConversation, triggerScrollToBottom, user, markMessagesAsRead]);
+  }, [queryClient, user, markMessagesAsRead]);
 };

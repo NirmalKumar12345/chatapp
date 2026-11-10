@@ -1,3 +1,5 @@
+import { Marker, MarkerContent } from "@/components/ui/marker";
+
 interface DateSeparatorProps {
   label: string;
 }
@@ -6,14 +8,10 @@ export default function DateSeparator({
   label,
 }: DateSeparatorProps) {
   return (
-    <div className="flex items-center gap-3 py-3">
-      <div className="h-px flex-1 bg-border" />
-
-      <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+    <Marker variant="separator" className="py-3">
+      <MarkerContent className="rounded-full bg-background px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm">
         {label}
-      </span>
-
-      <div className="h-px flex-1 bg-border" />
-    </div>
+      </MarkerContent>
+    </Marker>
   );
 }
